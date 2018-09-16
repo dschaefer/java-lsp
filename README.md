@@ -12,3 +12,13 @@ The main use case is for Android and maybe Java microservices for those who pref
 IDEs like VS code.
 
 It's also a vehicle that allows me to become more familiar with LSP and keep my Java chops fresh.
+
+## Build
+
+The root directory is an Eclipse Gradle project. The vscode directory is a small extension that
+hooks up the language server.
+
+## Launch
+
+Launch the JavaLanguageServer. It currently creates a socket server on port 6565.
+On the vscode side, there's a language server written in node which pipes stdin/stdout to the socket. 
