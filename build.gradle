@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+	gradleApi()
+    implementation 'org.eclipse.jdt:ecj:3.14.0'
+    implementation 'com.android.tools.build:builder-model:3.1.4'
+    implementation 'org.apache.maven:maven-model-builder:3.5.4'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.5.0'
+    testImplementation 'junit:junit:4.12'
+}
+
+repositories {
+    jcenter()
+    google()
+}
