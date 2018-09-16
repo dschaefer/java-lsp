@@ -7,10 +7,15 @@
  *******************************************************************************/
 package org.eclipse.javalsp;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -20,23 +25,31 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 public class JavaLanguageServer implements LanguageServer, LanguageClientAware {
-	
+
 	private JavaTextDocumentService textDocumentService = new JavaTextDocumentService();
 	private JavaWorkspaceService workspaceService = new JavaWorkspaceService();
 	private LanguageClient client;
 
-	public static void main(String[] args) {
-		JavaLanguageServer server = new JavaLanguageServer();
-		Launcher<LanguageClient> launcher =
-				LSPLauncher.createServerLauncher(server, System.in, System.out);
-		server.connect(launcher.getRemoteProxy());
-		launcher.startListening();
+	public static void main(String[] args) throws Exception {
+		try (ServerSocket socketServer = new ServerSocket(6565)) {
+			Socket socket = socketServer.accept();
+			JavaLanguageServer server = new JavaLanguageServer();
+			Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server,
+					socket.getInputStream(),
+					socket.getOutputStream());
+			LanguageClient client = launcher.getRemoteProxy();
+			server.connect(client);
+			launcher.startListening();
+		}
 	}
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		ServerCapabilities caps = new ServerCapabilities();
+		InitializeResult result = new InitializeResult(caps);
+		CompletableFuture<InitializeResult> future = new CompletableFuture<InitializeResult>();
+		future.complete(result);
+		return future;
 	}
 
 	@Override
@@ -48,7 +61,7 @@ public class JavaLanguageServer implements LanguageServer, LanguageClientAware {
 	@Override
 	public void exit() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -64,5 +77,6 @@ public class JavaLanguageServer implements LanguageServer, LanguageClientAware {
 	@Override
 	public void connect(LanguageClient client) {
 		this.client = client;
+		this.client.logMessage(new MessageParams(MessageType.Info, "java-lsp started"));
 	}
 }
